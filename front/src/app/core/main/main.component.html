@@ -1,0 +1,138 @@
+<div class="header">
+  <div class="left">
+    <mat-button-toggle-group [value]="togglerValue" (change)="onTogglerChange($event)" class="toggler" name="fontStyle"
+      aria-label="Font Style">
+      <mat-button-toggle value="campaigns">Campaigns</mat-button-toggle>
+      <mat-button-toggle value="buyers">Buyers</mat-button-toggle>
+      <mat-button-toggle value="daily">Daily</mat-button-toggle>
+      <mat-button-toggle value="hourly">Hourly</mat-button-toggle>
+    </mat-button-toggle-group>
+    <mat-form-field class="select">
+      <mat-label>Second Group</mat-label>
+      <mat-select [disabled]="true">
+        <mat-option [value]="1">
+          Second Group
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field class="select">
+      <mat-label>Third Group</mat-label>
+      <mat-select [disabled]="true">
+        <mat-option [value]="1">
+          Third Group
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+  <div class="right">
+    <mat-form-field class="date-picker">
+      <input matInput [matDatepicker]="picker" placeholder="Choose a date">
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
+  </div>
+</div>
+<div class="table" matSort (matSortChange)="sortData($event)" [matSortDisableClear]="true">
+  <div class="tr th">
+    <div class="td td_name" mat-sort-header="name">
+      Source
+    </div>
+    <div class="td" mat-sort-header="leads">
+      Leads
+    </div>
+    <div class="td">
+      % of Leads
+    </div>
+    <div class="td">
+      Revenue Leads
+    </div>
+    <div class="td">
+      Revenue Calls
+    </div>
+    <div class="td">
+      Revenue Full
+    </div>
+  </div>
+  <ng-container *ngIf="data && data?.values?.length > 0; else loader">
+    <ng-container *ngFor="let item of data.values; let i = index">
+      <div class="tr">
+        <div class="td td_name" (click)="openChildLevel2(i, item.name)">
+          <span>{{ item.name }}</span>
+        </div>
+        <div class="td td_center">
+          <span>{{ item.leads }}</span>
+        </div>
+        <div class="td td_center">
+          <span>{{ ((item.leads / (data?.values | sum:'leads')) * 100) | number: '1.0-1' }}%</span>
+        </div>
+        <div class="td td_center">
+          <span>${{ item.revenueLeads | number : '1.2-2'}}</span>
+        </div>
+        <div class="td td_end">
+          <span>${{ item.revenueCalls | number : '1.2-2'}}</span>
+        </div>
+        <div class="td td_end">
+          <span>${{ item.revenueLeads +  item.revenueCalls | number : '1.2-2'}}</span>
+        </div>
+      </div>
+      <ng-container *ngIf="data.childIndex === i; then level2">
+
+      </ng-container>
+    </ng-container>
+    <div class="tr table-total">
+      <div class="td td_name">
+        <b>Total</b>
+      </div>
+      <div class="td td_center">
+        <b>{{ data?.values | sum:'leads' }}</b>
+      </div>
+      <div class="td td_center">
+        <b>100%</b>
+      </div>
+      <div class="td td_center">
+        <b>${{ data?.values | sum:'revenueLeads' | number : '1.2-2'}}</b>
+      </div>
+      <div class="td td_end">
+        <b>${{ data?.values | sum:'revenueCalls' | number : '1.2-2'}}</b>
+      </div>
+      <div class="td td_end">
+        <b>${{ data?.values | sumoftwo:'revenueLeads':'revenueCalls' | number : '1.2-2'}}</b>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+<ng-template #level2>
+  <ng-container *ngIf="data.child.values; else lineloader">
+    <div class="tr level2" *ngFor="let item of data.child.values; let i = index">
+      <div class="td td_name">
+        <span class="td_level2">{{ item.name }}</span>
+      </div>
+      <div class="td td_center">
+        <span>{{ item.leads }}</span>
+      </div>
+      <div class="td td_center">
+        <span>-</span>
+      </div>
+      <div class="td td_center">
+        <span>${{ item.revenueLeads | number : '1.2-2'}}</span>
+      </div>
+      <div class="td td_end">
+        <span>${{ item.revenueCalls | number : '1.2-2'}}</span>
+      </div>
+      <div class="td td_end">
+        <span>${{ item.revenueLeads +  item.revenueCalls | number : '1.2-2'}}</span>
+      </div>
+    </div>
+  </ng-container>
+</ng-template>
+
+<ng-template #loader>
+  <div class="loader">
+    <mat-spinner></mat-spinner>
+  </div>
+</ng-template>
+
+<ng-template #lineloader>
+  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+</ng-template>
