@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ApiService } from '../services/api.service';
 import { IDataTree } from '../models/data.model';
-import { Observable, timer } from 'rxjs';
-import { shareReplay, switchMap, delay } from 'rxjs/operators';
+import { Observable, timer, ReplaySubject } from 'rxjs';
+import { shareReplay, switchMap, delay, takeUntil } from 'rxjs/operators';
 import { Sort } from '@angular/material/sort';
 
 @Component({
@@ -11,6 +11,7 @@ import { Sort } from '@angular/material/sort';
   styleUrls: ['./main.component.scss']
 })
 export class MainComponent implements OnInit, OnDestroy {
+  destroy: ReplaySubject<any> = new ReplaySubject<any>(1);
   data: IDataTree = {} as IDataTree;
   timer: Observable<any>;
   togglerValue = 'campaigns';
@@ -23,15 +24,17 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   initTable() {
-    this.timer = timer(0, 15000).pipe(shareReplay({ bufferSize: 1, refCount: true }));
+    this.timer = timer(0, 15000).pipe(shareReplay({ bufferSize: 1, refCount: true }), takeUntil(this.destroy));
     this.data.sub = this.timer.pipe(switchMap(() => {
-      return this.apiService.requestApi('campaigns').pipe(delay(2000));
+      return this.apiService.requestApi('campaigns').pipe(delay(2000), takeUntil(this.destroy));
     })).subscribe(x => {
       this.data.values = x;
     });
   }
 
   ngOnDestroy() {
+    this.destroy.next(null);
+    this.destroy.complete();
   }
 
   onTogglerChange(event) {
@@ -43,7 +46,7 @@ export class MainComponent implements OnInit, OnDestroy {
     this.data.child = null;
     this.data.childIndex = null;
     this.data.sub = this.timer.pipe(switchMap(() => {
-      return this.apiService.requestApi(this.togglerValue).pipe(delay(2000));
+      return this.apiService.requestApi(this.togglerValue).pipe(delay(2000), takeUntil(this.destroy));
     })).subscribe(x => {
       this.data.values = x;
     });
@@ -58,7 +61,7 @@ export class MainComponent implements OnInit, OnDestroy {
       this.openToggle(index);
       this.data.child.values = null;
       this.data.child.sub = this.timer.pipe(switchMap(() => {
-        return this.apiService.requestApi(this.togglerValue, { name: value, filter: 'hourly' }).pipe(delay(2000));
+        return this.apiService.requestApi(this.togglerValue, { name: value, filter: 'hourly' }).pipe(delay(2000), takeUntil(this.destroy));
       })).subscribe(x => {
         this.data.child.values = x;
       });
