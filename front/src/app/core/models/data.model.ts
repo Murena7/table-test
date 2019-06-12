@@ -1,22 +1,31 @@
 import { Subscription } from 'rxjs';
 
-export interface IDataTree {
-  values: IDataTreeValue[];
+export interface IDataTreeParrent {
+  values: IDataTree[];
   sub: Subscription;
-  child: IDataTree;
-  childIndex: number;
 }
 
-export interface IDataTreeValue {
+export interface IDataTree {
   name: string;
   leads: number;
   revenueCalls: number;
   revenueLeads: number;
+  child: IDataTree[];
+  sub: Subscription;
+  isOpen: boolean;
 }
 
 export class DataTree {
-  values: IDataTreeValue[] = [] as IDataTreeValue[];
+  name: string;
+  leads: number;
+  revenueCalls: number;
+  revenueLeads: number;
+  child: IDataTree[] = [] as IDataTree[];
   sub: Subscription = null;
-  child: IDataTree = {} as IDataTree;
-  childIndex: number = null;
+  isOpen: false;
+}
+
+export class DataTreeParrent {
+  values: IDataTree[] = [];
+  sub: Subscription = null;
 }

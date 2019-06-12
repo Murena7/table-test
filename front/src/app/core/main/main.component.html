@@ -4,14 +4,14 @@
       aria-label="Font Style">
       <mat-button-toggle value="campaigns">Campaigns</mat-button-toggle>
       <mat-button-toggle value="buyers">Buyers</mat-button-toggle>
-      <mat-button-toggle value="daily">Daily</mat-button-toggle>
-      <mat-button-toggle value="hourly">Hourly</mat-button-toggle>
+      <!-- <mat-button-toggle value="daily">Daily</mat-button-toggle>
+      <mat-button-toggle value="hourly">Hourly</mat-button-toggle> -->
     </mat-button-toggle-group>
     <mat-form-field class="select">
       <mat-label>Second Group</mat-label>
-      <mat-select [disabled]="true">
-        <mat-option [value]="1">
-          Second Group
+      <mat-select (selectionChange)="onSelectorL2CHange($event)">
+        <mat-option *ngFor="let item of selectorLevel2" [value]="item">
+          {{item | titlecase}}
         </mat-option>
       </mat-select>
     </mat-form-field>
@@ -56,7 +56,7 @@
   <ng-container *ngIf="data && data?.values?.length > 0; else loader">
     <ng-container *ngFor="let item of data.values; let i = index">
       <div class="tr">
-        <div class="td td_name" (click)="openChildLevel2(i, item.name)">
+        <div class="td td_name" (click)="openChildLevel(i, item.name, 2)">
           <span>{{ item.name }}</span>
         </div>
         <div class="td td_center">
@@ -75,8 +75,9 @@
           <span>${{ item.revenueLeads +  item.revenueCalls | number : '1.2-2'}}</span>
         </div>
       </div>
-      <ng-container *ngIf="data.childIndex === i; then level2">
-
+      <ng-container *ngIf="data?.values[i]?.isOpen">
+        <ng-container *ngTemplateOutlet="level2; context: { $implicit: data.values[i] }">
+        </ng-container>
       </ng-container>
     </ng-container>
     <div class="tr table-total">
@@ -102,26 +103,26 @@
   </ng-container>
 </div>
 
-<ng-template #level2>
-  <ng-container *ngIf="data.child.values; else lineloader">
-    <div class="tr level2" *ngFor="let item of data.child.values; let i = index">
+<ng-template #level2 let-item>
+  <ng-container *ngIf="item.child.length > 0; else lineloader">
+    <div class="tr level2" *ngFor="let itemChild of item.child; let iChild = index">
       <div class="td td_name">
-        <span class="td_level2">{{ item.name }}</span>
+        <span class="td_level2">{{ itemChild.name | customdate :'longDate' }}</span>
       </div>
       <div class="td td_center">
-        <span>{{ item.leads }}</span>
+        <span>{{ itemChild.leads }}</span>
       </div>
       <div class="td td_center">
-        <span>-</span>
+        <span>{{ ((itemChild.leads / (item?.child | sum:'leads')) * 100) | number: '1.0-1' }}%</span>
       </div>
       <div class="td td_center">
-        <span>${{ item.revenueLeads | number : '1.2-2'}}</span>
+        <span>${{ itemChild.revenueLeads | number : '1.2-2'}}</span>
       </div>
       <div class="td td_end">
-        <span>${{ item.revenueCalls | number : '1.2-2'}}</span>
+        <span>${{ itemChild.revenueCalls | number : '1.2-2'}}</span>
       </div>
       <div class="td td_end">
-        <span>${{ item.revenueLeads +  item.revenueCalls | number : '1.2-2'}}</span>
+        <span>${{ itemChild.revenueLeads +  itemChild.revenueCalls | number : '1.2-2'}}</span>
       </div>
     </div>
   </ng-container>
