@@ -45,9 +45,12 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   private setDataToTree(newData: IDataTree[], oldData: IDataTree[]) {
-    newData.forEach((value: IDataTree, index) => {
-      if (!oldData[index]) { oldData[index] = new DataTree(); }
-      oldData[index] = { ...oldData[index], ...value };
+    if (oldData.length === 0) {
+      oldData.push(...newData);
+      return;
+    }
+    oldData.forEach((value: IDataTree, index) => {
+      oldData[index] = { ...value, ...newData.find((x: IDataTree) => value.name === x.name) };
     });
     this.sortData(this.sortParameters);
   }
@@ -64,6 +67,7 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   onTogglerChange(event) {
+    this.valueSelectorLevel2 = '';
     this.selectorValueWatcher(event.value);
     this.massChildUnsubscriberAndClean(this.data.values);
     this.preparationOnTogglerChange(event);
@@ -137,7 +141,7 @@ export class MainComponent implements OnInit, OnDestroy {
     }
     this.sortParameters = sort;
 
-    this.data.values = this.data.values.sort((a, b) => {
+    this.data.values.sort((a, b) => {
       return this.sortHelper(sort, a, b);
     });
 
@@ -149,7 +153,7 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   private massChildSort(child: IDataTree[], sort) {
-    child = child.sort((a, b) => {
+    child.sort((a, b) => {
       return this.sortHelper(sort, a, b);
     });
   }
